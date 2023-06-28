@@ -1,0 +1,21 @@
+{
+  "name": "FVD-Convert",
+  "version": "1.0.0",
+  "description": "Convert FVD Speed Dial to an importable html bookmark file",
+  "main": "index.js",
+  "scripts": {
+    "test": "rm ./extract/*;node index.js -i FDV.json -o import.html -x ./extract/ -f"
+  },
+  "keywords": [
+    "FDV",
+    "Speed Dial",
+    "Bookmark",
+    "Convert",
+    "Netscape"
+  ],
+  "author": "Frosty",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.4.0"
+  }
+}
