@@ -1,19 +1,16 @@
-let fs = require("fs");
-let path = require("path");
-let url = require("url");
-let axios = require("axios");
+const fs = require("fs");
+const path = require("path");
+const url = require("url");
+const axios = require("axios");
 const CancelToken = axios.CancelToken;
-let cancel;
 
+let cancel;
 let source = "";
 let commandArgs = {};
-
-Object.prototype.has = function (key) {
-    return Object.keys(this).includes(key);
-};
+let cache = {};
 
 // Template Stuff
-let template = {
+const template = {
     header:
         "<!DOCTYPE NETSCAPE-Bookmark-file-1>\n" +
         "<!-- This is an automatically generated file.\n" +
@@ -28,8 +25,13 @@ let template = {
     item: '          <DT><A HREF="{url}" ADD_DATE="{date}" ICON="{icon}" LAST_MODIFIED="{modified}">{title}</A>\n',
 };
 
+// Check if an object has a key
+Object.prototype.has = function (key) {
+    return Object.keys(this).includes(key);
+};
+
 // Process the command line arguments
-let commandlineArgs = (args) => {
+const commandlineArgs = (args) => {
     let command = {};
     let regex = new RegExp(/(\w+)\s?(.*)?/);
 
@@ -51,7 +53,7 @@ let commandlineArgs = (args) => {
 };
 
 // Does directory exist
-let dirExists = (dir) => {
+const dirExists = (dir) => {
     try {
         fs.opendirSync(dir, (err, isDir) => {
             if (err) return false;
@@ -64,7 +66,7 @@ let dirExists = (dir) => {
 };
 
 // Extract the thumbnail if it exists.
-let extractThumbnail = (_url, data) => {
+const extractThumbnail = (_url, data) => {
     let base64Header = new RegExp(/(^data\:image\/(\w+);base64,)/);
 
     if (base64Header.test(data)) {
@@ -80,12 +82,13 @@ let extractThumbnail = (_url, data) => {
 };
 
 // Get the favicon if it exists
-let getFavicon = (_url) => {
+const getFavicon = (_url) => {
     return new Promise((resolve, reject) => {
-        let parser = url.parse(_url, true);
-        axios({
+		let hostname = url.parse(bookmark.url, true).host;
+
+		axios({
             method: "GET",
-            url: `http://${parser.host}/favicon.ico`,
+            url: `http://${hostname}/favicon.ico`,
             responseType: "arraybuffer",
             cancelToken: new CancelToken(function executor(c) {
                 cancel = c;
@@ -93,9 +96,10 @@ let getFavicon = (_url) => {
             timeout: 5000,
         })
             .then((response) => {
-                console.log("🙋 Got icon for " + parser.host);
+                console.log("🙋 Got an icon for " + hostname);
                 const base64 = Buffer.from(response.data, "binary").toString("base64");
-                resolve("data:image/ico;base64," + base64);
+                cache[hostname] = "data:image/ico;base64," + base64;
+				resolve("data:image/ico;base64," + base64);
             })
             .catch((error) => {
                 cancel();
@@ -105,7 +109,7 @@ let getFavicon = (_url) => {
 };
 
 // Get groups from FVD file
-let doGroups = () => {
+const getGroups = () => {
     let groups = [];
 
     source["db"]["groups"].forEach((group) => {
@@ -115,7 +119,7 @@ let doGroups = () => {
 };
 
 // Get dials from a group
-let doDials = async (id) => {
+const getDials = async (id) => {
     let temp = [];
 
     bookmarks = source["db"]["dials"].filter((d) => d.group_id == id);
@@ -127,7 +131,14 @@ let doDials = async (id) => {
         builder["icon"] = "";
 
         // get a new favicon
-        if (commandArgs.has("f")) builder["icon"] = await getFavicon(bookmark.url);
+        if (commandArgs.has("f")) {
+			let hostname = url.parse(bookmark.url, true).host;
+
+			if (cache.has(hostname))
+				builder["icon"] = cache[hostname]
+			else
+				builder["icon"] = await getFavicon(bookmark.url);
+		}
 
         // extract the thumbnail
         if (commandArgs.has("x")) extractThumbnail(bookmark.url, bookmark.thumb);
@@ -138,7 +149,7 @@ let doDials = async (id) => {
 };
 
 // Creates the html
-let doHTML = (fvdData) => {
+const doHTML = (fvdData) => {
     let html = template.header;
 
     for (data in fvdData) {
@@ -148,7 +159,10 @@ let doHTML = (fvdData) => {
         // Because I prototyped the object it tries to dump that function out
         // Just have to skip that
         if (typeof value !== "function") {
-            html += template.start.replace("{name}", key).replace("{date}", new Date().getTime()).replace("{modified}", new Date().getTime());
+            html += template.start
+				.replace("{name}", key)
+				.replace("{date}", new Date().getTime())
+				.replace("{modified}", new Date().getTime());
 
             value.forEach((bookmark) => {
                 html += template.item
@@ -165,21 +179,23 @@ let doHTML = (fvdData) => {
 };
 
 // Start
-let convertFile = async () => {
+const convertFile = async () => {
     let tempJSON = [];
 
     source = JSON.parse(fs.readFileSync(commandArgs.i, "utf-8"));
 
-    for (group of doGroups()) {
+    for (group of getGroups()) {
         console.log(`📂 Starting ${group.name}`);
-        tempJSON[group.name] = await doDials(group.id);
+        tempJSON[group.name] = await getDials(group.id);
         console.log(`😎 Finished ${group.name} with ${tempJSON[group.name].length} bookmarks`);
+        console.log();
     }
 
-    //console.log(tempJSON)
     fs.writeFileSync(commandArgs.o, doHTML(tempJSON), "utf-8");
     console.log(`✅ HTML bookmarks file created!`);
 };
+
+// ***********************************************************************
 
 // Process the command line
 commandArgs = commandlineArgs(process.argv);
