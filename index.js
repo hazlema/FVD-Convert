@@ -96,7 +96,7 @@ const getFavicon = (_url) => {
             timeout: 5000,
         })
             .then((response) => {
-                console.log("🙋 Got an icon for " + hostname);
+                console.log("💗 Got an icon for " + hostname);
                 const base64 = Buffer.from(response.data, "binary").toString("base64");
                 cache[hostname] = "data:image/ico;base64," + base64;
                 resolve("data:image/ico;base64," + base64);
@@ -134,7 +134,11 @@ const getDials = async (id) => {
         if (commandArgs.has("f")) {
             let hostname = url.parse(bookmark.url, true).host;
 
-            if (cache.has(hostname)) builder["icon"] = cache[hostname];
+            if (cache.has(hostname)) {
+                console.log("⭐ Got an icon from the cache for " + hostname);
+                builder["icon"] = cache[hostname];
+            
+            } 
             else builder["icon"] = await getFavicon(bookmark.url);
         }
 
