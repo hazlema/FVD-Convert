@@ -12,17 +12,17 @@ let cache = {};
 // Template Stuff
 const template = {
     header:
-        "<!DOCTYPE NETSCAPE-Bookmark-file-1>\n" +
-        "<!-- This is an automatically generated file.\n" +
-        "     It will be read and overwritten.\n" +
-        "     DO NOT EDIT! -->\n" +
+        '<!DOCTYPE NETSCAPE-Bookmark-file-1>\n' +
+        '<!-- This is an automatically generated file.\n' +
+        '     It will be read and overwritten.\n' +
+        '     DO NOT EDIT! -->\n' +
         '<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n' +
-        "<TITLE>Bookmarks</TITLE>\n" +
-        "<H1>Bookmarks</H1>\n" +
-        "<DL><p>\n",
+        '<TITLE>Bookmarks</TITLE>\n' +
+        '<H1>Bookmarks</H1>\n' +
+        '<DL><p>\n',
     start: '     <DT><H3 ADD_DATE="{date}" LAST_MODIFIED="{modified}" PERSONAL_TOOLBAR_FOLDER="false">{name}</H3>\n     <DL><p>\n',
-    end: "     </DL><p>\n",
-    item: '          <DT><A HREF="{url}" ADD_DATE="{date}" ICON="{icon}" LAST_MODIFIED="{modified}">{title}</A>\n',
+      end: '     </DL><p>\n',
+     item: '          <DT><A HREF="{url}" ADD_DATE="{date}" ICON="{icon}" LAST_MODIFIED="{modified}">{title}</A>\n',
 };
 
 // Check if an object has a key
@@ -77,7 +77,7 @@ const extractThumbnail = (_url, data) => {
 
         data = data.replace(matches[1], "");
         fs.writeFileSync(file, data, { encoding: "base64" });
-        console.log("✅ Thumbnail extracted: " + file);
+        console.log("🖼️  Thumbnail extracted to " + file);
     }
 };
 
@@ -151,7 +151,7 @@ const getDials = async (id) => {
 };
 
 // Creates the html
-const doHTML = (fvdData) => {
+const buildHTML = (fvdData) => {
     let html = template.header;
 
     for (data in fvdData) {
@@ -187,14 +187,14 @@ const convertFile = async () => {
     source = JSON.parse(fs.readFileSync(commandArgs.i, "utf-8"));
 
     for (group of getGroups()) {
-        console.log(`📂 Starting ${group.name}`);
+        console.log(`📂 Starting import of ${group.name}`);
         tempJSON[group.name] = await getDials(group.id);
         console.log(`😎 Finished ${group.name} with ${tempJSON[group.name].length} bookmarks`);
         console.log();
     }
 
-    fs.writeFileSync(commandArgs.o, doHTML(tempJSON), "utf-8");
-    console.log(`✅ HTML bookmarks file created!`);
+    fs.writeFileSync(commandArgs.o, buildHTML(tempJSON), "utf-8");
+    console.log(`🥰 HTML bookmarks file created!`);
 };
 
 // ***********************************************************************
