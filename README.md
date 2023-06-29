@@ -1,4 +1,4 @@
-# Convert from FVD Speed Dial to a HTML bookmarks file
+# Convert FVD Speed Dial exports to a generic bookmarks file
 
 ![FDV Screenshot](./img/screenshot.png)
 
