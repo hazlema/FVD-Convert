@@ -79,7 +79,8 @@ let extractThumbnail = (_url, data) => {
     }
 };
 
-const getFavicon = (_url) => {
+// Get the favicon if it exists
+let getFavicon = (_url) => {
     return new Promise((resolve, reject) => {
         let parser = url.parse(_url, true);
         axios({
@@ -89,15 +90,15 @@ const getFavicon = (_url) => {
             cancelToken: new CancelToken(function executor(c) {
                 cancel = c;
             }),
-			timeout: 5000
+            timeout: 5000,
         })
             .then((response) => {
-				console.log("🙋 Got icon for " + parser.host)
+                console.log("🙋 Got icon for " + parser.host);
                 const base64 = Buffer.from(response.data, "binary").toString("base64");
                 resolve("data:image/ico;base64," + base64);
             })
             .catch((error) => {
-				cancel();
+                cancel();
                 resolve("");
             });
     });

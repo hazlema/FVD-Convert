@@ -1,6 +1,6 @@
 {
   "name": "FVD-Convert",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Convert FVD Speed Dial to an importable html bookmark file",
   "main": "index.js",
   "scripts": {
