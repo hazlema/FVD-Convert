@@ -44,6 +44,6 @@ Command line option: -x [output directory]
 **Example:**
 node index.js -i myFvdBookmarks.json -o import.html -f -x ./images/
 
-## After you import the html with the -f option
+## After you import the generic bookmarks file into a browser.  (Generated with the -f option)
 
 ![import](./img/import.png)
