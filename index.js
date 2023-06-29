@@ -84,9 +84,9 @@ const extractThumbnail = (_url, data) => {
 // Get the favicon if it exists
 const getFavicon = (_url) => {
     return new Promise((resolve, reject) => {
-		let hostname = url.parse(bookmark.url, true).host;
+        let hostname = url.parse(bookmark.url, true).host;
 
-		axios({
+        axios({
             method: "GET",
             url: `http://${hostname}/favicon.ico`,
             responseType: "arraybuffer",
@@ -99,7 +99,7 @@ const getFavicon = (_url) => {
                 console.log("🙋 Got an icon for " + hostname);
                 const base64 = Buffer.from(response.data, "binary").toString("base64");
                 cache[hostname] = "data:image/ico;base64," + base64;
-				resolve("data:image/ico;base64," + base64);
+                resolve("data:image/ico;base64," + base64);
             })
             .catch((error) => {
                 cancel();
@@ -132,13 +132,11 @@ const getDials = async (id) => {
 
         // get a new favicon
         if (commandArgs.has("f")) {
-			let hostname = url.parse(bookmark.url, true).host;
+            let hostname = url.parse(bookmark.url, true).host;
 
-			if (cache.has(hostname))
-				builder["icon"] = cache[hostname]
-			else
-				builder["icon"] = await getFavicon(bookmark.url);
-		}
+            if (cache.has(hostname)) builder["icon"] = cache[hostname];
+            else builder["icon"] = await getFavicon(bookmark.url);
+        }
 
         // extract the thumbnail
         if (commandArgs.has("x")) extractThumbnail(bookmark.url, bookmark.thumb);
@@ -160,9 +158,9 @@ const doHTML = (fvdData) => {
         // Just have to skip that
         if (typeof value !== "function") {
             html += template.start
-				.replace("{name}", key)
-				.replace("{date}", new Date().getTime())
-				.replace("{modified}", new Date().getTime());
+                .replace("{name}", key)
+                .replace("{date}", new Date().getTime())
+                .replace("{modified}", new Date().getTime());
 
             value.forEach((bookmark) => {
                 html += template.item
@@ -172,7 +170,7 @@ const doHTML = (fvdData) => {
                     .replace("{modified}", new Date().getTime())
                     .replace("{icon}", bookmark.icon);
             });
-			html += template.end;
+            html += template.end;
         }
     }
     return html;
